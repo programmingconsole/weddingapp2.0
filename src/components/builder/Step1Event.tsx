@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Heart, Sparkles, Calendar, Moon, Gift, Sun, Ring, PartyPopper } from 'lucide-react';
+import { Heart, Sparkles, Calendar, Moon, Gift, Sun, PartyPopper } from 'lucide-react';
 
 const EVENTS = [
   { id: 'Wedding', name: 'Wedding', icon: Heart, desc: 'Classic wedding celebration & ceremony' },
