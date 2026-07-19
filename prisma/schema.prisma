@@ -1,0 +1,163 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String         @id @default(cuid())
+  name             String?
+  email            String         @unique
+  passwordHash     String?
+  role             String         @default("USER") // USER, ADMIN
+  subscriptionTier String         @default("FREE") // FREE, PREMIUM
+  image            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  invitations      Invitation[]
+  subscriptions    Subscription[]
+}
+
+model Invitation {
+  id                String             @id @default(cuid())
+  slug              String             @unique
+  title             String
+  eventType         String             @default("Wedding") // Wedding, Nikah, Reception, Engagement, etc.
+  themeId           String             @default("luxury-gold")
+  
+  // Couple & Family Details
+  brideName         String
+  bridePhoto        String?
+  brideBio          String?
+  groomName         String
+  groomPhoto        String?
+  groomBio          String?
+  parentsName       String?
+  familyMembers     String?
+
+  // Dates & Times
+  weddingDate       String?
+  weddingTime       String?
+  nikahTime         String?
+  receptionTime     String?
+
+  // Location & Contact
+  venue             String?
+  venueAddress      String?
+  googleMapsUrl     String?
+  contactNumber     String?
+  whatsappNumber    String?
+  email             String?
+  instagram         String?
+
+  // Spiritual / Quotes / Verses
+  weddingQuote      String?
+  quranVerse        String?
+  bibleVerse        String?
+  invitationMessage String?
+  dressCode         String?
+
+  // Visual Customizations
+  primaryColor      String             @default("#eab308")
+  secondaryColor    String             @default("#0f172a")
+  fontStyle         String             @default("Playfair Display")
+  animationStyle    String             @default("fade-up")
+  backgroundStyle   String             @default("gold-luxury")
+  buttonStyle       String             @default("rounded-full")
+  isDarkMode        Boolean            @default(true)
+  musicUrl          String?
+
+  // Enabled Features stored as JSON string
+  // { countdown: true, rsvp: true, guestbook: true, maps: true, gallery: true, video: true, timeline: true, qrcode: true, share: true }
+  features          String             @default("{\"countdown\":true,\"rsvp\":true,\"guestbook\":true,\"maps\":true,\"gallery\":true,\"timeline\":true,\"qrcode\":true,\"share\":true}")
+
+  // Status & Counts
+  isPublished       Boolean            @default(true)
+  isPremium         Boolean            @default(false)
+  viewsCount        Int                @default(0)
+  rsvpCount         Int                @default(0)
+
+  // User Relation
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Children
+  rsvps             RsvpResponse[]
+  galleryItems      GalleryItem[]
+  wishes            GuestWish[]
+  analytics         VisitorAnalytic[]
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model RsvpResponse {
+  id             String     @id @default(cuid())
+  invitationId   String
+  invitation     Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guestName      String
+  phone          String?
+  email          String?
+  attendingCount Int        @default(1)
+  status         String     @default("ATTENDING") // ATTENDING, NOT_ATTENDING
+  message        String?
+  createdAt      DateTime   @default(now())
+}
+
+model GalleryItem {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  type         String     @default("IMAGE") // IMAGE, VIDEO
+  url          String
+  caption      String?
+  createdAt    DateTime   @default(now())
+}
+
+model GuestWish {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guestName    String
+  message      String
+  createdAt    DateTime   @default(now())
+}
+
+model VisitorAnalytic {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  ipAddress    String?
+  userAgent    String?
+  deviceType   String     @default("Mobile") // Mobile, Tablet, Desktop
+  country      String     @default("India")
+  referrer     String?
+  createdAt    DateTime   @default(now())
+}
+
+model Template {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  category     String   @default("Wedding") // Wedding, Nikah, Reception, Engagement
+  previewImage String
+  description  String
+  isPremium    Boolean  @default(false)
+  tags         String   @default("Gold, Luxury")
+  createdAt    DateTime @default(now())
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      String   @default("FREE") // FREE, PREMIUM
+  status    String   @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  paymentId String?
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+}
